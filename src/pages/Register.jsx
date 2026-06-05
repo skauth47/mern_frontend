@@ -1,112 +1,119 @@
 import { useState } from "react";
 import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [status, setStatus] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const API =
     "https://mern-backend-x2li.onrender.com/api/users/register";
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setStatus("");
+    setIsLoading(true);
 
     try {
-      const response = await axios.post(API, {
+      await axios.post(API, {
         name,
         email,
         password,
       });
 
-      // SAVE TOKEN
-      localStorage.setItem("token", response.data.token);
-
-      alert("Registration Successful");
-
-      // REDIRECT
-      window.location.href = "/";
+      navigate("/login", {
+        replace: true,
+        state: { message: "Registration successful. Please log in." },
+      });
 
     } catch (error) {
       console.log(error);
 
-      alert(
-        error.response?.data?.message ||
-          "Registration Failed"
-      );
+      setStatus(error.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        width: "350px",
-        margin: "100px auto",
-        padding: "30px",
-        border: "1px solid #ccc",
-        borderRadius: "10px",
-        fontFamily: "Arial",
-      }}
-    >
-      <h2 style={{ textAlign: "center" }}>
-        Register
-      </h2>
+    <main className="auth-layout">
+      <section className="auth-hero register-hero" aria-label="Registration overview">
+        <div className="brand">
+          <span className="brand-badge">MF</span>
+          <span>MERN Flow</span>
+        </div>
+        <div className="auth-hero-copy">
+          <p className="eyebrow">New access</p>
+          <h1>Create your MongoDB-backed account.</h1>
+          <p>
+            Register through the backend API, then return to login and open your protected
+            dashboard session.
+          </p>
+        </div>
+        <div className="hero-stats">
+          <div><strong>1</strong><span>Create account</span></div>
+          <div><strong>2</strong><span>Log in</span></div>
+          <div><strong>3</strong><span>Manage users</span></div>
+        </div>
+      </section>
 
-      <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          placeholder="Enter Name"
-          value={name}
-          onChange={(e) =>
-            setName(e.target.value)
-          }
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "15px",
-          }}
-        />
+      <section className="auth-panel" aria-label="Register">
+        <div className="auth-card">
+          <p className="eyebrow">Create account</p>
+          <h2>Register</h2>
+          <p className="muted">Your account will be saved through the existing MERN backend.</p>
 
-        <input
-          type="email"
-          placeholder="Enter Email"
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "15px",
-          }}
-        />
+          <form className="form-stack" onSubmit={handleRegister}>
+            <label>
+              Full name
+              <input
+                type="text"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </label>
 
-        <input
-          type="password"
-          placeholder="Enter Password"
-          value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginBottom: "15px",
-          }}
-        />
+            <label>
+              Email address
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
 
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "10px",
-            cursor: "pointer",
-          }}
-        >
-          Register
-        </button>
-      </form>
-    </div>
+            <label>
+              Password
+              <input
+                type="password"
+                placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </label>
+
+            {status && <p className="form-message">{status}</p>}
+
+            <button className="primary-button" type="submit" disabled={isLoading}>
+              {isLoading ? "Creating account..." : "Register"}
+            </button>
+          </form>
+
+          <p className="switch-copy">
+            Already registered? <Link to="/login">Log in</Link>
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }
 
